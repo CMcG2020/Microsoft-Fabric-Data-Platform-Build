@@ -1,0 +1,125 @@
+# Fabric notebook source
+
+# METADATA ********************
+
+# META {
+# META   "kernel_info": {
+# META     "name": "synapse_pyspark"
+# META   },
+# META   "dependencies": {
+# META     "environment": {
+# META       "environmentId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+# META       "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# META     }
+# META   }
+# META }
+
+# MARKDOWN ********************
+
+# #### Generate Sourced - Data Source API
+# ---
+# Generic notebook to extract records via API from external data source tables, before storing the raw data within the `Sourced` Lakehouse as parquet format.
+# 
+# 
+# ###### **<u>Step 1: Import common libraries and helper functions</u>**
+# 
+# - Import any required public libraries and custom functions via `%run` magic command. 
+# - For custom functions, import the `nb_helper_functions_parent_caller.py` notebook to collectively bring in all the required custom functions.
+
+# CELL ********************
+
+%run nb_helper_functions_parent_caller
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# ###### **<u>Step 2: Define Parameters</u>**
+# The following cell is noted as a Parameter cell; default values can be overwritten when the notebook is executed either via DAG calls or Data Factory Pipelines. To 'parameterize' a code cell, click on the `...` 'more command' button on the right as you hover your cursor over the cell and click `[@] Toggle parameter cell`
+
+# PARAMETERS CELL ********************
+
+trigger_time = None
+table_name = None
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# ###### **<u>Step 3: Extract configurations and table schema</u>**
+# - Extract global configuration and table specific configuration defined in `notebooks/nb_configs.py`. 
+# - Extract table schema defined in `notebooks/schemas/<source> or <target/<facts> or <dimension>>/`
+
+# CELL ********************
+
+global_configs = globals()['global_configs']
+source_configs = globals()['data_source_api']
+table_configs = source_configs['source_tables'][table_name]
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# #### Main Code Block
+# ---
+# ###### **<u>Step 4: Perform ETL</u>**
+# - extract API token for external data source system stored in environment based Azure Key Vault
+# - initiate data source reader class and query
+# - retrieve records from table specified from parameter cell
+# - write records as to Sourced Lakehouse
+
+# CELL ********************
+
+# Main code block
+try:
+  # Initialize DataSourceReader
+  api_token = extract_secret(source_configs['kv_api_token_name'])
+  reader = DataSourceReader(api_token, table_name)
+  
+  # Get data from source
+  source_data = reader.get_data()
+  
+  # Process source data
+  df = reader.process_data(source_data)
+  
+  if df:
+      print(f"Successfully retrieved data for table '{source_data['name']}' (ID: {table_name}) with {len(df)} rows.")
+      
+      # Write to sourced lakehouse
+      write_parquet_to_lakehouse(
+          df, 
+          global_configs['sourced_lh_name'],
+          source_configs['name'], 
+          f"table_{table_name}",
+          table_configs.get('schema_version', source_configs['schema_version']), 
+          trigger_time
+      )
+      
+      print(f"Data successfully written to lakehouse for table {table_name}.")
+  else:
+      print(f"No data found in table {table_name}.")
+
+except Exception as e:
+  print(f"An error occurred while processing table {table_name}: {str(e)}")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }

@@ -1,0 +1,5 @@
+dependencies:
+  - pip:
+      - azure-storage-file-datalake==12.17.0
+      - soda-core-spark-df==3.3.22
+      - nutter==0.1.35

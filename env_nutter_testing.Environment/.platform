@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Environment",
+    "displayName": "TDM",
+    "description": "Environment"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "894291a9-f8d5-4ea0-8d4d-a41d3d9b7541"
+  }
+}

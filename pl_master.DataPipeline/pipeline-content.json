@@ -1,0 +1,491 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "trigger_time",
+          "value": {
+            "value": "@startOfDay(utcNow(), 'yyyy-MM-ddTHH:MM:ss')",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Set Trigger Time",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "dim_application, dim_application_source, dim_application_map",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Application Assets",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Application Harmonization",
+        "dependsOn": [
+          {
+            "activity": "Run Application Assets",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "dim_ticket",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Ticket Assets",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Dim Date",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "fact_outage, fact_contract, fact_ticket_event, fact_app_classification_map, fact_user_group_map",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Fact Assets",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "dim_supplier, dim_supplier_source, dim_supplier_map",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Supplier Assets",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Supplier Harmonization",
+        "state": "Inactive",
+        "onInactiveMarkAs": "Succeeded",
+        "dependsOn": [
+          {
+            "activity": "Run Supplier Assets",
+            "dependencyConditions": [
+              "Completed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "dim_app_classification, dim_user_group",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Dim Assets 1",
+        "dependsOn": [
+          {
+            "activity": "Set Trigger Time",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run - Masking Activities",
+        "dependsOn": [
+          {
+            "activity": "Run Application Assets",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run Supplier Assets",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Supplier Harmonization",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Application Harmonization",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run Ticket Assets",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run Dim Date",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run Fact Assets",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "Run Dim Assets 2",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "SetVariable",
+        "typeProperties": {
+          "variableName": "messageCard",
+          "value": {
+            "value": "{\n    \"@type\": \"MessageCard\",\n    \"@context\": \"http://schema.org/extensions\",\n    \"themeColor\": \"0076D7\",\n    \"summary\": \"Pipeline status alert message\",\n    \"sections\": [\n        {\n            \"activityTitle\": \"**#Pipeline Failure Alert**\",\n            \"facts\": [\n                {\n                    \"name\": \"Data Factory Name:\",\n                    \"value\": \"@{pipeline().DataFactory}\"\n                },\n                {\n                    \"name\": \"Pipeline RunId:\",\n                    \"value\": \"@{pipeline().RunId}\"\n                },\n                {\n                    \"name\": \"Pipeline Name:\",\n                    \"value\": \"@{pipeline().PipelineName}\"\n                },\n                {\n                    \"name\": \"Pipeline Status:\",\n                    \"value\": \"Failed\"\n                },\n                {\n                    \"name\": \"Execution Start Time (UTC):\",\n                    \"value\": \"@{pipeline().TriggerTime}\"\n                },\n                {\n                    \"name\": \"Notification Time (UTC):\",\n                    \"value\": \"@{utcnow()}\"\n                }\n            ],\n            \"markdown\": true\n        }\n    ]\n}",
+            "type": "Expression"
+          }
+        },
+        "policy": {
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Set JSON schema",
+        "dependsOn": [
+          {
+            "activity": "Run - Masking Activities",
+            "dependencyConditions": [
+              "Skipped",
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "WebActivity",
+        "typeProperties": {
+          "method": "POST",
+          "headers": {},
+          "body": {
+            "value": "@json(variables('messageCard'))",
+            "type": "Expression"
+          }
+        },
+        "externalReferences": {
+          "connection": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Invoke Teams Webhook Url",
+        "dependsOn": [
+          {
+            "activity": "Set JSON schema",
+            "dependencyConditions": [
+              "Succeeded",
+              "Failed"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Fail",
+        "typeProperties": {
+          "message": "Forced failure due to failure on atleast one fact/dim",
+          "errorCode": "1001"
+        },
+        "name": "Force Failure",
+        "description": "if the Webhook is invoked, this means that the pipeline has failed on atleast one dim/fact. This block forces the pipeline to fail whereas otherwise it would have been shown as a success even if one of the dims/facts failed.",
+        "dependsOn": [
+          {
+            "activity": "Invoke Teams Webhook Url",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "workspaceId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "parameters": {
+            "trigger_time": {
+              "value": {
+                "value": "@variables('trigger_time')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "asset_list": {
+              "value": "dim_user",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 300,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run Dim Assets 2",
+        "dependsOn": [
+          {
+            "activity": "Run Dim Assets 1",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "teamWebhookUrl": {
+        "type": "string",
+        "defaultValue": "https://xxxxx.webhook.office.com/webhookb2/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx@xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/IncomingWebhook/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    },
+    "variables": {
+      "trigger_time": {
+        "type": "String"
+      },
+      "messageCard": {
+        "type": "String"
+      }
+    }
+  }
+}

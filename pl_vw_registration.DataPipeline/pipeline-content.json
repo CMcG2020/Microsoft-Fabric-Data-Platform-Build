@@ -1,0 +1,72 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "xxx",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Generate View Definitions",
+        "dependsOn": []
+      },
+      {
+        "type": "ForEach",
+        "typeProperties": {
+          "isSequential": false,
+          "batchCount": 5,
+          "items": {
+            "value": "@json(activity('Generate View Definitions').output.result.exitValue).live_table_names",
+            "type": "Expression"
+          },
+          "activities": [
+            {
+              "type": "Script",
+              "typeProperties": {
+                "database": "xxx",
+                "scripts": [
+                  {
+                    "text": {
+                      "value": "CREATE OR ALTER VIEW vw_@{substring(item(), 0, indexOf(item(), '_sv_'))} AS \nSELECT @{json(activity('Generate View Definitions').output.result.exitValue).table_column_map[item()]} FROM @{item()};",
+                      "type": "Expression"
+                    },
+                    "type": "Query"
+                  }
+                ]
+              },
+              "externalReferences": {
+                "connection": "xxx"
+              },
+              "policy": {
+                "timeout": "0.12:00:00",
+                "retry": 1,
+                "retryIntervalInSeconds": 30,
+                "secureInput": false,
+                "secureOutput": false
+              },
+              "name": "Create View",
+              "dependsOn": []
+            }
+          ]
+        },
+        "name": "ForEachTable",
+        "description": "Iterate through each table and create views with specific columns.",
+        "dependsOn": [
+          {
+            "activity": "Generate View Definitions",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
